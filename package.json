@@ -1,0 +1,18 @@
+{
+	"main":"./lib/s2server",
+	"name":"s2",
+	"description":"用于快速构建基于NodeJs的服务器。",
+	"version":"1.0",
+	"keywords":["package","server"],
+	"maintainers":[{
+		"name":"Spencer Ye",
+		"email":"pallyoung@163.com"
+		}],
+	"contributors":[{
+		"name":"Spencer Ye",
+		"email":"pallyoung@163.com"
+	}],
+	"bugs":{
+		"email":"pallyoung@163.com"
+	}	
+}
