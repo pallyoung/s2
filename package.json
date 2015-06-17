@@ -1,18 +1,25 @@
 {
-	"main":"./lib/s2server",
-	"name":"s2",
-	"description":"用于快速构建基于NodeJs的服务器。",
-	"version":"1.0",
-	"keywords":["package","server"],
-	"maintainers":[{
-		"name":"Spencer Ye",
-		"email":"pallyoung@163.com"
-		}],
-	"contributors":[{
-		"name":"Spencer Ye",
-		"email":"pallyoung@163.com"
+	"main": "./lib/s2server",
+	"name": "s2server",
+	"description": "用于快速构建基于NodeJs的服务器。",
+	"version": "0.1.0",
+	"keywords": ["package", "server"],
+	"maintainers": [{
+		"name": "Spencer Ye",
+		"email": "pallyoung@163.com"
 	}],
-	"bugs":{
-		"email":"pallyoung@163.com"
-	}	
+	"contributors": [{
+		"name": "Spencer Ye",
+		"email": "pallyoung@163.com"
+	}],
+	"dependencies": {
+		"ws": ">= 0.0.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/pallyoung/s2.git"
+	},
+	"bugs": {
+		"email": "pallyoung@163.com"
+	}
 }
