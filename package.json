@@ -2,7 +2,7 @@
 	"main": "./lib/s2server",
 	"name": "s2server",
 	"description": "用于快速构建基于NodeJs的服务器。",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"keywords": ["package", "server"],
 	"maintainers": [{
 		"name": "Spencer Ye",
