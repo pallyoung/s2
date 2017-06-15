@@ -7,6 +7,9 @@
     "package",
     "server"
   ],
+  "scripts":{
+	"start":"node test/start.js"
+  },
   "maintainers": [
     {
       "name": "Spencer Ye",

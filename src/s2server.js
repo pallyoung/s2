@@ -10,6 +10,7 @@ var EventEmitter = require("events").EventEmitter;
 var fs = require("fs");
 var MultipartParser = require("./multipart_parser");
 var config = require("./config/config");
+var Utils = require('./Utils');
 /**
 * @description
 * version
@@ -25,41 +26,17 @@ var HTTPStatus = {
     }
 }
 
-function getExt(pathname) {
-    var ext = path.extname(pathname);
-    ext = ext ? ext.slice(1) : "";
-    return ext;
-}
 
-function getPathName(request) {
-    return url.parse(request.url).pathname;
-}
-function mkdirsSync(dirs) {
-    var parent = '';
-    dirs = dirs.split(path.sep);
-    parent = dirs.shift();
-    if (parent === "") {
-        parent = path.sep;
-    }
-    if (!fs.existsSync(parent)) {
-        fs.mkdirSync(parent);
-    }
-    while (dirs.length !== 0) {
-        parent += path.sep + dirs.shift();
-        if (!fs.existsSync(parent)) {
-            fs.mkdirSync(parent);
-        }
-    }
 
-}
-function loadConfig(module) {
+
+function loadConfig(modules) {
     var _config;
-    if (typeof module === "string") {
+    if (typeof modules === "string") {
         _config = require(path.resolve(module));
     } else {
-        _config = module;
+        _config = modules;
     }
-    CONFIG = extend(CONFIG, _config);
+    CONFIG = Utils.extend(CONFIG, _config);
 
     if (_config.mine) {
         MINE = _config.mine;
@@ -70,7 +47,7 @@ function loadConfig(module) {
     }
     if (_config.cache) {
         cache = _config.cache;
-        mkdirsSync(cache);
+        Utils.mkdirsSync(cache);
     }
 }
 

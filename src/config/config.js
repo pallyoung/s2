@@ -8,6 +8,6 @@ module.exports={
 	"unicode":"utf-8",
 	"controller":require("./ctrls_config"),
 	"mine":require("./mine_config"),
-	"cache":path.resolve("./","/test/temp"),
+	"cache":path.resolve("./","test/temp"),
 	"proxy":null
 };
