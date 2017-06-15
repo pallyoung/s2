@@ -25,18 +25,6 @@ var HTTPStatus = {
     }
 }
 
-/**
- * @description
- * 对象继承
- **/
-
-function extend(dst, source) {
-    for (var o in source) {
-        dst[o] = source[o];
-    }
-    return dst;
-}
-
 function getExt(pathname) {
     var ext = path.extname(pathname);
     ext = ext ? ext.slice(1) : "";
@@ -120,106 +108,34 @@ function route(request, response) {
     if (/^\/*$/.test(pathname)) {
         pathname = CONFIG.index;
     };
-    var ext = getExt(pathname);
     var realPath = decodeURI(path.join(CONFIG.webroot, pathname));
     var s2Request = null;
     var controller;
-    if (ext === "") {
-        controller = findController(pathname);
-        if (null != controller) {
-            s2Request = new S2Request(request);
-            s2Request.on("ready", function () {
-                controller(s2Request, response);
-            });
-        } else {
-            responseError(response, HTTPStatus["404"]);
-        }
-        return true;
-    } else {
-        fs.readFile(realPath, "binary", function (err, file) {
-            if (err) {
-                responseError(response, HTTPStatus["404"]);
-            } else {
-                var contentType = MINE[ext] + ";charset=" + CONFIG.unicode || "text/plain" + ";charset=" + CONFIG.unicode;
-                response.writeHead(200, {
-                    'Content-Type': contentType
+
+    fs.readFile(realPath, "binary", function (err, file) {
+        if (err) {
+            controller = findController(pathname);
+            if (null != controller) {
+                s2Request = new S2Request(request);
+                s2Request.on("ready", function () {
+                    controller(s2Request, response);
                 });
-                response.write(file, "binary");
-                response.end();
+            } else {
+                responseError(response, HTTPStatus["404"]);
             }
-        });
-    }
+            return true;
+        } else {
+            var contentType = MINE[ext] + ";charset=" + CONFIG.unicode || "text/plain" + ";charset=" + CONFIG.unicode;
+            response.writeHead(200, {
+                'Content-Type': contentType
+            });
+            response.write(file, "binary");
+            response.end();
+        }
+    });
 }
 
-/**
- * @description
- * 封装Request对象
- *
- *
- **/
 
-function S2Request(request) {
-    var self = this;
-    this._request = request;
-    extend(this, request);
-    this.parameters = {};
-    this.length = 0;
-    this.buffer = new Buffer(0);
-    this.type = 0;
-    this.multipartParser = null;
-    request.on("data", function (chunk) {
-        var contenttype = self.headers["content-type"];
-        var boundary;
-        if (contenttype.indexOf("multipart/form-data") !== -1) {
-            self.type = 1;
-            if (self.multipartParser == null) {
-                if (/boundary=(.+)/i.test(contenttype)) {
-                    boundary = RegExp.$1;
-                }
-                self.multipartParser = new MultipartParser(boundary);
-                self.multipartParser.cache = CONFIG.cache;
-                self.multipartParser.onend = function () {
-                    self.parameters = self.multipartParser.parameters;
-                    self.emit("ready");
-                };
-            }
-            self.multipartParser.pushBufferToParse(chunk);
-        } else {
-            self.buffer = Buffer.concat([self.buffer, chunk]);
-        }
-        self.length += chunk.length;
-
-    });
-
-    request.on("end", function () {
-        if (self.type == 0) {
-            self.parameters = queryString.parse(self.buffer.toString("utf8"));
-            self.emit("ready");
-        }
-    });
-
-
-};
-
-S2Request.prototype = new EventEmitter();
-
-/**
- * @description
- * 获取get方式提交的数据
- **/
-
-S2Request.prototype.queryString = function (key) {
-    return url.parse(this.request.url, true).query[key];
-};
-
-/**
- * @description
- * 获取post方式提交的数据
- **/
-
-S2Request.prototype.getParameter = function (key) {
-    return this.parameters[key] || null;
-};
 
 
 function s2serverListener(req, res) {
