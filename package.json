@@ -1,5 +1,5 @@
 {
-	"main": "./lib/s2server",
+	"main": "index.js",
 	"name": "s2server",
 	"description": "用于快速构建基于NodeJs的服务器。",
 	"version": "0.2.3",
