@@ -23,7 +23,6 @@ function getPathName(request) {
 }
 function mkdirsSync(dirs) {
     var parent = '';
-    console.log(dirs)
     dirs = dirs.split(path.sep);
     parent = dirs.shift();
     if (parent === "") {
@@ -40,9 +39,23 @@ function mkdirsSync(dirs) {
     }
 
 }
+
+function iterator(dest,callback){
+    for (var o in dest){
+        if(dest.hasOwnProperty(o)){
+            if(!callback(o,dest[o],dest)){
+                continue;
+            }else{
+                return;
+            }
+            
+        }
+    }
+}
 module.exports = {
     extend:extend,
     getExt:getExt,
     getPathName:getPathName,
-    mkdirsSync:mkdirsSync
+    mkdirsSync:mkdirsSync,
+    iterator:iterator
 }

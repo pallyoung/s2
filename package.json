@@ -7,8 +7,9 @@
     "package",
     "server"
   ],
-  "scripts":{
-	"start":"node test/start.js"
+  "scripts": {
+    "start": "node test/start.js",
+    "test":""
   },
   "maintainers": [
     {
