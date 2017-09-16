@@ -1,17 +1,13 @@
 'use strict'
 var http = require('http');
-var CONFIG = require('./CONFIG');
+var Configuration = require('./Configuration');
 var fs = require('fs');
-
 function Application() {
     var httpServer = http.createServer();
     var self = this;
     httpServer.on('request', function (comingMessage, serverResponse) {
-        serverResponse.writeHead(200, {
-            'Content-Type': 'text/plain;charset=utf-8'
-        });
-        serverResponse.write('hello world');
-        serverResponse.end();
+        require('./Router').route(comingMessage,serverResponse);
+        //delete require.cache['/Users/Spencer/workspace/s2/src/Router.js']
     });
     httpServer.on('clientError', function () {
 
@@ -36,14 +32,14 @@ Application.prototype = {
         var self = this;
         if (this.httpServer.listening){
             this.httpServer.close(function(){
-                self.httpServer.listen(CONFIG.port);
+                self.httpServer.listen(Configuration.port);
             });
         }else{
-            self.httpServer.listen(CONFIG.port);
+            self.httpServer.listen(Configuration.port);
         }    
     },
     start: function () {
-        CONFIG.load();
+        Configuration.load();
         this._start();
     }
 }

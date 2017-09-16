@@ -1,10 +1,31 @@
 'use strict'
 
 var fs = require('fs');
-var Request = require('./../Request');
-function route(request){
+var url = require('url');
+var Configuration = require('./Configuration');
+var Request = require('./Request');
+var staticControllers = require('./controllers/static');
+
+function fixUrl(url){
     
-    if(fs.existsSync(path)){
+}
+function matchContext(pathname){
+    if(pathname == ''||pathname == '/'){
+        return true;
+    }
+    return pathname.startsWith(Configuration.context);
+}
+function route(comingMessage,serverResponse){
+    var uri = url.parse(comingMessage.url);
+    var pathname = Configuration.webRoot + uri.pathname;
+    var request = new Request(comingMessage);
+    if(fs.existsSync(pathname)){
+        staticControllers.file(pathname,serverResponse);
+    }else{
+        staticControllers.file(pathname,serverResponse);
     }
 }
 
+  module.exports = {
+      route,
+  }

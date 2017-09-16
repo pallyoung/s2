@@ -52,6 +52,7 @@ function iterator(dest,callback){
         }
     }
 }
+
 module.exports = {
     extend:extend,
     getExt:getExt,

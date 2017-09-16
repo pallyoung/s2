@@ -229,7 +229,6 @@ MultipartParser.prototype = {
 		var name = fields[1].split("=")[1].slice(1, -1);
 		this.names.push(name);
 		this.parameters[name] = "";
-		console.log(name);
 		if (fields.length == 3) {
 			var file = new File();
 			file.name = fields[2].split("=")[1].slice(1, -1);
