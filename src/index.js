@@ -131,14 +131,15 @@ function createServer(fn) {
 var server = createServer(s2serverListener);
 loadConfig(config);
 module.exports = {
-    loadConfig: loadConfig,
-    server: server,
     listen: function () {
         server.close(function () {
             server.listen(CONFIG.port);
             console.log("Server is runing.");
             console.log(util.inspect(CONFIG));
         });
+    },
+    start:function(){
+
     },
     VERSION: VERSION
 }

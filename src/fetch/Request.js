@@ -58,7 +58,7 @@ function Request(url, request) {
         this.body = request.body;        
     }
     if (!this.headers['Content-Type']) {
-        this.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        this.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=uft-8';
     }
 
 }

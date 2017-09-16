@@ -4,8 +4,8 @@
  * 封装Request对象
  **/
 
-var MultipartParser = require('./MultipartParser');
-var Utils = require('./Utils');
+// var MultipartParser = require('./MultipartParser');
+var util = require('./util/util');
 function S2Request(request) {
     var self = this;
     this._request = request;
