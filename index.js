@@ -1,2 +1,2 @@
 'use strict'
-module.exports = require('./src/Application');
+module.exports = require('./src');

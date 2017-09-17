@@ -1,6 +1,7 @@
 'use strict'
 var EventEmitter = require("events").EventEmitter;
 var queryString = require("querystring");
+var url = require("url");
 /**
  * @description
  * 封装Request对象
@@ -66,7 +67,7 @@ Request.prototype = new EventEmitter();
  **/
 
 Request.prototype.queryString = function (key) {
-    return url.parse(this.request.url, true).query[key];
+    return url.parse(this.url, true).query[key];
 };
 
 /**

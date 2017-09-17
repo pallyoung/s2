@@ -19,8 +19,8 @@ Configuration.prototype = {
         this.index = config.index || 'index.html';
         this.unicode = config.unicode || "utf-8";
         this.mime = config.mime || mime;
-        this.webRoot = process.cwd() + (config.webRoot ||'/assert');
-        this.controllers = process.cwd() + (config.controllers ||'/controllers');
+        this.assert = process.cwd() + (config.assert ||'/assert');
+        this.api = process.cwd() + (config.api ||'/api');
         this.proxy = config.proxy;
         this.temporary = config.temporary || process.cwd() + '/temporary';
     },
@@ -28,6 +28,10 @@ Configuration.prototype = {
         if (fs.existsSync(CONFIG_FILE)) {
             this.init(require(CONFIG_FILE));
         }
+        var dir = this.api+'/controllers/';
+        fs.readdirSync(dir).forEach(function(file){
+            require(dir+file);
+        })
     }
 }
 module.exports = new Configuration();
