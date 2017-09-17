@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "start": "node test/start.js",
-    "test":""
+    "test": ""
   },
   "maintainers": [
     {
@@ -25,6 +25,7 @@
   ],
   "dependencies": {
     "js-console": "0.0.1",
+    "pipexjs": "^1.0.0",
     "ws": ">= 0.0.0"
   },
   "repository": {

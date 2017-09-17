@@ -5,7 +5,7 @@ var fs = require('fs');
 var Request = require('./Request');
 var Response = require('./Response');
 var route = require('./Router').route;
-var Pipe = require('./pipe/Pipe');
+var Pipe = require('pipexjs');
 var url = require('url');
 function Server() {
     var httpServer = http.createServer();
@@ -30,7 +30,6 @@ function Server() {
     });
     this.controllerPipe = Pipe(function(source, next, abort){
         var controller = source.controller;
-        console.log(controller.toString())
         controller(source.request,source.response);
         abort();
 
