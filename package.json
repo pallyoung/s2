@@ -2,14 +2,14 @@
   "main": "index.js",
   "name": "s2server",
   "description": "用于快速构建基于NodeJs的服务器。",
-  "version": "0.2.3",
+  "version": "0.3.1",
   "keywords": [
     "package",
     "server"
   ],
   "scripts": {
-    "start": "node test/start.js",
-    "test": ""
+    "start": "",
+    "test": "cd test && node start.js"
   },
   "maintainers": [
     {

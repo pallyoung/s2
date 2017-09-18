@@ -7,6 +7,7 @@ var Response = require('./Response');
 var route = require('./Router').route;
 var Pipe = require('pipexjs');
 var url = require('url');
+var Cookie = require('./Cookie');
 function Server() {
     var httpServer = http.createServer();
     var self = this;
@@ -25,12 +26,24 @@ function Server() {
     });
     this.assertPipe = Pipe(function (source, next, abort) {
         var response = source.response;
-        response.file(source.assert);
+        var assert = source.assert;
+        var request = source.request;
+        if(typeof assert == 'string'&&!fs.existsSync(assert)){
+            source.errorMessage = '404';
+            self.errorPipe.source(source);
+        }else{
+            response.file(source.assert);     
+        }
         abort();
     });
     this.controllerPipe = Pipe(function(source, next, abort){
         var controller = source.controller;
-        controller(source.request,source.response);
+        try{
+            controller(source.request,source.response);            
+       }catch(e){
+            source.errorMessage = '503';
+            this.errorPipe(source);
+       }
         abort();
 
     });
@@ -45,9 +58,11 @@ function Server() {
 
     });
     httpServer.on('request', function (comingMessage, serverResponse) {
+        var request = new Request(comingMessage);
+        var response = new Response(serverResponse,response);
         self.routePipe.source({
-            request: new Request(comingMessage),
-            response: new Response(serverResponse)
+            request,
+            response
         });
     });
     httpServer.on('clientError', function () {

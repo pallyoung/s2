@@ -9,6 +9,8 @@ var url = require("url");
 
 // var MultipartParser = require('./MultipartParser');
 var util = require('./util/util');
+
+var Cookie = require('./Cookie');
 function Request(commingMessage) {
     EventEmitter.call(this);
     var self = this;
@@ -24,7 +26,7 @@ function Request(commingMessage) {
     this.length = 0;
     this.type = 0;
     this.multipartParser = null;
-    this.buffer = new Buffer(0);    
+    this.buffer = new Buffer(0);   
     commingMessage.on("data", function (chunk) {
         var contenttype = self.headers["content-type"];
         var boundary;
@@ -80,5 +82,13 @@ Request.prototype.getParameter = function (key) {
 };
 Request.prototype.destroy = function(){
     this._commingMessage.destroy();
+}
+Request.prototype.getCookies = function(){
+    var cookies = this.headers.cookie;
+    if(cookies){
+        return cookies.split(';').map(function(cookie){
+            return new Cookie(cookie);
+        });
+    }
 }
 module.exports = Request;
