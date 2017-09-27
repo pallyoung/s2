@@ -55,10 +55,8 @@ Response.prototype = {
     addCookie:function(cookie){
         this.headers.append('Set-Cookie',cookie.toString());
     },
-    removeCookie:function(){
+    removeCookie:function(cookies){
 
-    },
-
-
+    }
 }
 module.exports = Response;

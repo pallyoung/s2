@@ -7,7 +7,7 @@ var url = require("url");
  * 封装Request对象
  **/
 
-// var MultipartParser = require('./MultipartParser');
+var MultipartParser = require('./multipart_parser');
 var util = require('./util/util');
 
 var Cookie = require('./Cookie');
@@ -25,40 +25,8 @@ function Request(commingMessage) {
     this.parameters = {};
     this.length = 0;
     this.type = 0;
-    this.multipartParser = null;
-    this.buffer = new Buffer(0);   
-    commingMessage.on("data", function (chunk) {
-        var contenttype = self.headers["content-type"];
-        var boundary;
-        if (false&&contenttype.indexOf("multipart/form-data") !== -1) {
-            self.type = 1;
-            if (self.multipartParser == null) {
-                if (/boundary=(.+)/i.test(contenttype)) {
-                    boundary = RegExp.$1;
-                }
-                self.multipartParser = new MultipartParser(boundary);
-                self.multipartParser.cache = CONFIG.cache;
-                self.multipartParser.onend = function () {
-                    self.parameters = self.multipartParser.parameters;
-                    self.emit("ready");
-                };
-            }
-            self.multipartParser.pushBufferToParse(chunk);
-        } else {
-            self.buffer = Buffer.concat([self.buffer, chunk]);
-        }
-        self.length += chunk.length;
-
-    });
-
-    commingMessage.on("end", function () {
-        if (self.type == 0) {
-            self.parameters = queryString.parse(self.buffer.toString("utf8"));
-            self.emit("ready");
-        }
-    });
-
-
+    this._cookies = this.getCookies(); 
+    this.body = null;   
 };
 
 Request.prototype = new EventEmitter();
@@ -78,7 +46,9 @@ Request.prototype.queryString = function (key) {
  **/
 
 Request.prototype.getParameter = function (key) {
-    return this.parameters[key] || null;
+    if(typeof this.body == 'object'){
+        return this.body[key];
+    }
 };
 Request.prototype.destroy = function(){
     this._commingMessage.destroy();
@@ -91,4 +61,9 @@ Request.prototype.getCookies = function(){
         });
     }
 }
+
+Request.prototype.getSession=function(){
+    
+}
+
 module.exports = Request;

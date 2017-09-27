@@ -8,17 +8,18 @@ var route = require('./Router').route;
 var Pipe = require('pipexjs');
 var url = require('url');
 var Cookie = require('./Cookie');
+var bodyParser = require('./BodyParser');
 function Server() {
     var httpServer = http.createServer();
     var self = this;
     this.routePipe = Pipe(function (source, next, abort) {
-        var pathname =url.parse(source.request.url).pathname;
+        var pathname = url.parse(source.request.url).pathname;
         var controller = route(pathname);
-        if(!controller){
-            pathname = Configuration.assert+pathname;
+        if (!controller) {
+            pathname = Configuration.assert + pathname;
             source.assert = pathname;
             self.assertPipe.source(source);
-        }else{
+        } else {
             source.controller = controller;
             self.controllerPipe.source(source);
         }
@@ -28,29 +29,29 @@ function Server() {
         var response = source.response;
         var assert = source.assert;
         var request = source.request;
-        if(typeof assert == 'string'&&!fs.existsSync(assert)){
+        if (typeof assert == 'string' && !fs.existsSync(assert)) {
             source.errorMessage = '404';
             self.errorPipe.source(source);
-        }else{
-            response.file(source.assert);     
+        } else {
+            response.file(source.assert);
         }
         abort();
     });
-    this.controllerPipe = Pipe(function(source, next, abort){
+    this.controllerPipe = Pipe(function (source, next, abort) {
         var controller = source.controller;
-        try{
-            controller(source.request,source.response);            
-       }catch(e){
+        try {
+            controller(source.request, source.response);
+        } catch (e) {
             source.errorMessage = '503';
-            this.errorPipe(source);
-       }
+            this.errorPipe.source(source);
+        }
         abort();
 
     });
-    this.errorPipe = Pipe(function(source, next, abort){
+    this.errorPipe = Pipe(function (source, next, abort) {
         var response = source.response;
-        response.writeHead('404',{
-            "content-type":"text/plain;charset=utf-8"
+        response.writeHead('404', {
+            "content-type": "text/plain;charset=utf-8"
         })
         response.write('404');
         response.end();
@@ -59,17 +60,30 @@ function Server() {
     });
     httpServer.on('request', function (comingMessage, serverResponse) {
         var request = new Request(comingMessage);
-        var response = new Response(serverResponse,response);
-        self.routePipe.source({
-            request,
-            response
+        var response = new Response(serverResponse, response);
+        if (request.method == 'get') {
+            self.routePipe.source({
+                request,
+                response
+            });
+            return;
+        }
+        bodyParser(request.headers['content-type'], comingMessage).then(function (content) {
+            request.body = content;
+            self.routePipe.source({
+                request,
+                response
+            });
+        }, function () {
+            this.errorPipe.source('503');
         });
+
     });
     httpServer.on('clientError', function () {
-
+        this.errorPipe.source('503');
     });
     httpServer.on('error', function () {
-
+        this.errorPipe.source('503');
     })
     this.httpServer = httpServer;
 
