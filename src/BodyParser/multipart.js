@@ -252,6 +252,7 @@ MultipartParser.prototype = {
 		if (typeof target === "string") {
 			target += this.tempData.toString('utf8');
 		} else {
+			//'todo';
 			target.getWriteStream().end(this.tempData, function () {
 
 			});

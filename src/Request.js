@@ -7,7 +7,6 @@ var url = require("url");
  * 封装Request对象
  **/
 
-var MultipartParser = require('./multipart_parser');
 var util = require('./util/util');
 
 var Cookie = require('./Cookie');

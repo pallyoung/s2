@@ -1,44 +1,29 @@
 'use strict'
-var util = require('util'),
-	fs = require('fs'),
-	WriteStream = require('fs').WriteStream,
-	ReadStream = fs.ReadStream,
-	EventEmitter = require('events').EventEmitter;
-function File (properties) {
-	this.size = 0;
-	this.path = null;
-	this.name = null;
-	this.type = null;
-	this.lastModifiedDate = null;
-	this._writeStream = null;
-	this._readStream = null;
-	for (var key in properties) {
-		this[key] = properties[key];
+var util = require('util');
+var fs = require('fs');
+var path = require('path');
+
+function File(filepath) {
+	if (!filepath) {
+		throw new Error('filepath is null');
 	}
+	
+	var stat = fs.statSync(filepath);
+	this._stat = stat;
+	this.size = stat.size;
+	this.ctime = stat.ctime;
+	this.isFile = stat.isFile;
+	this.birthtime = stat.birthtime;
+	this.mtime = stat.mtime;
+	this.ctime = stat.ctime;
+
+	var uri = path.parse(filepath);
+	this.path = filepath;
+	this.ext = uri.ext;
+	this.name = uri.name;
+	this.root = uri.root;
+	this.base = uri.base;
+	this.dir = uri.dir;
 
 };
-util.inherits(File, EventEmitter);
-
-File.prototype.getWriteStream = function () {
-	var self = this;
-	if (this._writeStream == null) {
-		this._writeStream = new WriteStream(this.path);
-		this._writeStream.on("finish", function () {
-			self._writeStream = null;
-			self.lastModifiedDate = new Date();
-			self.size = fs.statSync(self.path).size;
-		});
-	}
-	return this._writeStream;
-}
-File.prototype.getReadStream = function () {
-	var self = this;
-	if (this._readStream == null) {
-		this._readStream = new WriteStream(this.path);
-		this._readStream.on("end", function () {
-			self._readStream = null;
-		});
-	}
-	return this._readStream;
-}
 module.exports = File;
