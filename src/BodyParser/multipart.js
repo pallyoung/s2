@@ -1,6 +1,7 @@
 'use strict'
 var Configuration = require('./../Configuration');
-
+var util = require('./../util/util');
+var fs = require('fs');
 var Buffer = require('buffer').Buffer,
 	File = require('./../File'),
 	path = require('path'),
@@ -41,24 +42,34 @@ var Buffer = require('buffer').Buffer,
 		return c | 0x20;
 	};
 
-var MultipartParser = function (boundary) {
+var status = {
+	uninit: 0,
+	parse: 1,
+	pause: 2,
+	completed: 3
+}
+function MultipartParser(boundary) {
 
 	this.boundary = null;
 	this.boundaryChars = null;
-	this.lookbehind = null;
 	this.state = S.PARSER_UNINITIALIZED;
-	this.i = 0;
-	this.flags = 0;
-	this.data = [];
-	this.names = [];
-	this.parameters = {};
-	this.tempData = new Buffer(0);
+	this.status = status.uninit;
+	this.buffer = new Buffer(0);
+	this.current = '';
+	this.body = {};
+	this.index = -1;
+	this.partStart = 0;
+	this.partIndex = 0;
+	this.partEnd = 0;
+
 	this.setBoundary(boundary);
 	this.onend = function () { };
+
 	//临时缓存路径
-	this.cache =  Configuration.temporary;;
+	this.cache = Configuration.temporary;
 };
 MultipartParser.prototype = {
+	constructor: MultipartParser,
 	setBoundary: function (str) {
 		this.boundary = new Buffer(str.length + 2);
 		this.boundary.write('--', 0, 'ascii');
@@ -70,223 +81,234 @@ MultipartParser.prototype = {
 		}
 	},
 	pushBufferToParse: function (buffer) {
-		this.data.push(buffer);
-		this.run();
+		this.buffer = Buffer.concat([this.buffer, buffer]);
+		return this.run();
 	},
 	run: function () {
-		var buffer;
-		while ((buffer = this.data.shift()) != null) {
-			this.parse(buffer);
+		if (this.status === status.parse) {
+			return;
+		} else {
+			this.status = status.parse;
+			return this.next();
 		}
-
 	},
-	parse: function (buffer) {
-		var len = buffer.length;
-		var c;
-		var l, i;
-		var startIndex, endIndex;
-		for (i = 0; i < len; i++) {
-			c = buffer[i];
-			switch (this.state) {
-				case S.PARSER_UNINITIALIZED:
-					this.state++;
-				case S.START:
-					this.state++;
-					this.i = 0;
-				case S.START_BOUNDARY:
-					if (c == this.boundary[this.i]) {
-						this.i++;
-					} else if (this.i == this.boundary.length) {
-						if (c == CR && buffer[i + 1] == LF) {
-							this.i = 0;
-							this.state = S.HEADER_FIELD_START;
-						} else if (c == HYPHEN && buffer[i + 1] == HYPHEN) {
-							this.i = 0;
-							this.state = S.END;
-						} else {
-							throw new Error("解析错误");
-						}
-					} else {
-						throw new Error("解析错误");
-					}
-					break;
-				case S.HEADER_FIELD_START:
-					this.i = 0;
-					if (c == LF) {
-						this.state++;
-					} else {
-						throw new Error("解析错误");
-					}
-					break;
-				case S.HEADER_FIELD:
-					if (c == COLON) {
-						this.state++;
-					}
-					break;
-				case S.HEADER_VALUE_START:
-					startIndex = i;
-					this.state++;
-				case S.HEADER_VALUE:
-					endIndex = i;
+	parseChar(c, i, buffer) {
+		switch (this.state) {
+			case S.PARSER_UNINITIALIZED:
+				this.state++;
+			case S.START:
+				this.state++;
+				this.partIndex = 0;
+			case S.START_BOUNDARY:
+				if (c == this.boundary[this.partIndex]) {
+					this.partIndex++;
+				} else if (this.partIndex == this.boundary.length) {
 					if (c == CR && buffer[i + 1] == LF) {
-						this.tempData = Buffer.concat([this.tempData, buffer.slice(startIndex, endIndex)]);
-						this.state++;
-					}
-					break;
-				case S.HEADER_VALUE_ALMOST_DONE:
-					if (c == LF) {
-						this.state = this.pasreHeaderValue();
-						startIndex = 0;
-						endIndex = 0;
-						this.tempData = new Buffer(0);
-					} else {
-						throw new Error("解析错误");
-					}
-					break;
-				case S.FILE:
-					this.state++;
-				case S.CONTENT_TYPE_VALUE_START:
-					if (c == COLON) {
-						this.state++;
-						startIndex = i + 1;
-					}
-					break;
-				case S.CONTENT_TYPE_VALUE:
-					endIndex = i;
-					if (c == CR && buffer[i + 1] == LF) {
-						this.tempData = Buffer.concat([this.tempData, buffer.slice(startIndex, endIndex)]);
-						this.state++;
-					}
-					break;
-				case S.CONTENT_TYPE_VALUE_DONE:
-					if (c == LF) {
-						this.state = this.parseContentType();
-						startIndex = 0;
-						endIndex = 0;
-						this.tempData = new Buffer(0);
-					} else {
-						throw new Error("解析错误");
-					}
-					break;
-				case S.STRING:
-					this.state = S.HEADERS_ALMOST_DONE;
-				case S.HEADERS_ALMOST_DONE:
-					if (c == CR && buffer[i + 1] == LF) {
-						this.state++;
-					} else {
-						throw new Error("解析错误");
-					}
-					break;
-
-				case S.PART_DATA_START:
-					if (c == LF) {
-						this.state++;
-						startIndex = i + 1;
-					} else {
-						throw new Error("解析错误");
-					}
-					break;
-				case S.PART_DATA:
-					this.i = 0;
-					while (i < len) {
-						c = buffer[i];
-						if (c === this.boundary[this.i]) {
-							this.i++;
-							if (this.i === this.boundary.length) {
-								this.tempData = Buffer.concat([this.tempData, buffer.slice(startIndex, endIndex)]);
-								this.state++;
-								this.i = 0;
-								break;
-							}
-						} else {
-							endIndex = i - 1;
-							this.i = 0;
-						}
-						i++;
-					}
-					break;
-				case S.PART_END:
-					this.parseValue();
-					this.tempData = new Buffer(0);
-					if (c == CR && buffer[i + 1] == LF) {
+						this.partIndex = 0;
 						this.state = S.HEADER_FIELD_START;
 					} else if (c == HYPHEN && buffer[i + 1] == HYPHEN) {
+						this.partIndex = 0;
 						this.state = S.END;
 					} else {
 						throw new Error("解析错误");
 					}
-					startIndex = 0;
-					endIndex = 0;
-					break;
-				case S.END:
+				} else {
+					throw new Error("解析错误");
+				}
+				return;
+			case S.HEADER_FIELD_START:
+				this.partIndex = 0;
+				if (c == LF) {
+					this.state++;
+				} else {
+					throw new Error("解析错误");
+				}
+				return;
+			case S.HEADER_FIELD:
+				if (c == COLON) {
+					this.state++;
+				}
+				return;
+			case S.HEADER_VALUE_START:
+				this.partStart = i;
+				this.state++;
+			case S.HEADER_VALUE:
+				if (c == CR && buffer[i + 1] == LF) {
+					this.state++;
+				} else {
+					this.partEnd = i;
+				}
+				return;
+			case S.HEADER_VALUE_ALMOST_DONE:
+				if (c == LF) {
+					this.setHeaderValue(buffer.slice(this.partStart, this.partEnd + 1));
+					this.partStart = 0;
+				} else {
+					throw new Error("解析错误");
+				}
+				return;
+			case S.FILE:
+				this.state++;
+			case S.CONTENT_TYPE_VALUE_START:
+				if (c == COLON) {
+					this.state++;
+					this.partStart = i + 1;
+				}
+				return;
+			case S.CONTENT_TYPE_VALUE:
+				this.partEnd = i;
+				if (c == CR && buffer[i + 1] == LF) {
+					this.state++;
+				}
+				return;
+			case S.CONTENT_TYPE_VALUE_DONE:
+				if (c == LF) {
+					this.setContentType(buffer.slice(this.partStart, this.partEnd));
+				} else {
+					throw new Error("解析错误");
+				}
+				return;
+			case S.STRING:
+				this.state = S.HEADERS_ALMOST_DONE;
+			case S.HEADERS_ALMOST_DONE:
+				if (c == CR && buffer[i + 1] == LF) {
+					this.state++;
+				} else {
+					throw new Error("解析错误");
+				}
+				return;
+
+			case S.PART_DATA_START:
+				if (c == LF) {
+					this.state++;
+					this.partStart = i + 1;
+					this.partIndex = 0;
+				} else {
+					throw new Error("解析错误");
+				}
+				return;
+			case S.PART_DATA:
+				if (c === this.boundary[this.partIndex]) {
+					this.partIndex++;
+					if (this.partIndex === this.boundary.length) {
+						this.state++;
+						this.partIndex = 0;
+						return this.setPartValue(buffer.slice(this.partStart, this.partEnd - 1));
+					}
+				} else {
+					this.partEnd = i;
+					this.partIndex = 0;
+				}
+				return;
+			case S.PART_END:
+				if (c == CR && buffer[i + 1] == LF) {
+					this.state = S.HEADER_FIELD_START;
+				} else if (c == HYPHEN && buffer[i + 1] == HYPHEN) {
+					this.state = S.END;
+				} else {
+					throw new Error("解析错误");
+				}
+				return;
+			case S.END:
+				if(this.index==this.buffer.length-1){
 					this.end();
-					return;
-			}
+				}
+				return;
 		}
-		this.tempData = Buffer.concat([this.tempData, buffer.slice(startIndex, endIndex)]);
 	},
-	pasreHeaderValue: function () {
-		var headerValue = this.tempData.toString('utf8');
+	setHeaderValue: function (headerValue) {
+		var headerValue = headerValue.toString('utf8');
 		var fields = headerValue.split(";");
 		var name = fields[1].split("=")[1].slice(1, -1);
-		this.names.push(name);
-		this.parameters[name] = "";
+		this.current = name;
+		this.body[name] = "";
 		if (fields.length == 3) {
-			var file = new File();
-			file.name = fields[2].split("=")[1].slice(1, -1);
-			file.path = path.join(this.cache, Date.now() + file.name);
-			this.parameters[name] = file;
-			return S.FILE;
+			var filename = fields[2].split("=")[1].slice(1, -1);
+			
+			var filepath = path.join(this.cache, Date.now() + filename);
+			var file = new File(filepath);
+			this.body[name] = file;
+			this.state = S.FILE;
+		} else {
+			this.state = S.STRING;
 		}
-		return S.STRING;
 	},
-	parseContentType: function () {
-		var contentType = this.tempData.toString("utf8");
-		var file = this.parameters[this.names[this.names.length - 1]];
-		file.type = contentType;
-		return S.HEADERS_ALMOST_DONE;
+	setContentType: function (value) {
+
+		var contentType = value.toString("utf8").trim();
+		var file = this.body[this.current];
+		file.mime = contentType;
+		this.state = S.HEADERS_ALMOST_DONE;
 	},
-	parseValue: function () {
-		var target = this.parameters[this.names[this.names.length - 1]];
+	setPartValue: function (value) {
+		var target = this.body[this.current] || '';
 		var self = this;
 		if (typeof target === "string") {
-			target += this.tempData.toString('utf8');
+			target += value.toString('utf8');
+			this.body[this.current] = target;
 		} else {
 			//'todo';
-			target.getWriteStream().end(this.tempData, function () {
+			if (!fs.existsSync(target.dir)) {
+				util.mkdirsSync(target.dir);
+			}
+			target.size = value.length;
 
+			var stream = fs.createWriteStream(target.path);
+			return stream.end(value, () => {
+				target.size = value.length;
+				return this.next();
 			});
+			return true;
 		}
-		this.parameters[this.names[this.names.length - 1]] = target;
-		return S.START;
+
+	},
+	next: function (i) {
+		if (i) {
+			this.index = i;
+		} else {
+			i = ++this.index;
+		};		
+		var buffer = this.buffer;
+		while (this.index < this.buffer.length) {
+			i = this.index;
+			if(this.parseChar(this.buffer[i], i, this.buffer)){
+				break;
+			}else{
+				this.index++;
+			}
+		}
+		this.status = status.pause;
+		this.index--;
 	},
 	end: function () {
+		this.status = status.completed;
 		this.onend();
 	}
 }
 
-module.exports = function parser(contentType,stram){
-    return new Promise(function(resolve,reject){
-        try{
-        var boundary;
-        if (/boundary=(.+)/i.test(contentType)) {
-            boundary = RegExp.$1;
-        }
-        var multipartParser = new MultipartParser(boundary);
-        multipartParser.onend = function () {
-            resolve(multipartParser.parameters);
-        };
-        stram.on("data", function (chunk) {
-            multipartParser.pushBufferToParse(chunk);
-        });
-        stram.on("error", function () {
-            reject()
-        });
-        stram.on("end", function (chunk) {
-            multipartParser.pushBufferToParse(chunk);
-        });
-        }catch(e){
-            console.log(e)
-        }
-    });
+module.exports = function parser(contentType, stram) {
+	return new Promise(function (resolve, reject) {
+		try {
+			var boundary;
+			if (/boundary=(.+)/i.test(contentType)) {
+				boundary = RegExp.$1;
+			}
+			var multipartParser = new MultipartParser(boundary);
+			multipartParser.onend = function () {
+				// multipartParser.buffer = null;
+				resolve(multipartParser.body);
+			};
+			stram.on("data", function (chunk) {
+				multipartParser.pushBufferToParse(chunk);
+			});
+			stram.on("error", function () {
+				reject()
+			});
+			stram.on("end", function (chunk) {
+				//multipartParser.pushBufferToParse(chunk);
+			});
+		} catch (e) {
+			console.log(e)
+		}
+	});
 };

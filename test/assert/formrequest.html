@@ -11,10 +11,13 @@
 <body>
     <form method="post" enctype="text/plain" action="/index.html">
         <input type="text" name="fname">
+       
         <input type="submit" value="Submit">
     </form>
     <form method="post" enctype="multipart/form-data" action="/index.html">
         <input type="text" name="fname">
+        <input type="text" name="fss">
+        <input type="text" name="fff">
         <input type="submit" value="Submit">
     </form>
     <form method="post" enctype="application/x-www-form-urlencoded" action="/index.html">
@@ -23,6 +26,10 @@
     </form>
     <form method="post" enctype="application/json" action="/index.html">
         <input type="text" name="fname">
+        <input type="submit" value="Submit">
+    </form>
+    <form method="post" enctype="multipart/form-data" action="/upload">
+        <input type="file" name="file">
         <input type="submit" value="Submit">
     </form>
 </body>

@@ -15,11 +15,18 @@ function saysorry(request, response){
 	response.end();
 }
 
+function upload(request, response){
+	var file = request.getParameter('file');
+	response.file(file);
+}
 controller(
 	'/sayhello',
 	sayhello
 )(
 	'/saysorry',
 	saysorry
+)(
+	'/upload',
+	upload
 );
 

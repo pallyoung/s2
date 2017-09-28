@@ -2,20 +2,30 @@
 var util = require('util');
 var fs = require('fs');
 var path = require('path');
-
+var Configuration = require('./Configuration');
 function File(filepath) {
 	if (!filepath) {
 		throw new Error('filepath is null');
 	}
 	
-	var stat = fs.statSync(filepath);
+	var stat;
+
+	try{
+		stat = fs.statSync(filepath);		
+	}catch(e){
+		var now = new Date().toGMTString();
+		stat = {
+			size:0,
+			ctime:now,
+			birthtime:now,
+			mtime:now
+		}
+	}
 	this._stat = stat;
 	this.size = stat.size;
 	this.ctime = stat.ctime;
-	this.isFile = stat.isFile;
 	this.birthtime = stat.birthtime;
 	this.mtime = stat.mtime;
-	this.ctime = stat.ctime;
 
 	var uri = path.parse(filepath);
 	this.path = filepath;
@@ -24,6 +34,7 @@ function File(filepath) {
 	this.root = uri.root;
 	this.base = uri.base;
 	this.dir = uri.dir;
+	this.mime = Configuration.mime[this.ext];	
 
 };
 module.exports = File;
