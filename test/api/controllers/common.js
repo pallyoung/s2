@@ -22,7 +22,13 @@ function upload(request, response){
 }
 function proxy(request, response){
 	fetch(request.getParameter('url')).then(function(s){
-		console.log(s)
+		response.writeHead(s.statusCode,s.statusMessage,s.headers);
+		s.on('data',function(chunk){
+			response.write(chunk);
+		})
+		s.on('end',function(){
+			response.end()
+		})
 	})
 }
 controller(

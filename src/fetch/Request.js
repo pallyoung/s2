@@ -19,9 +19,7 @@ var REQUEST_KEYS = [
     'timeout',
     'auth',
     'localAddress',
-    'headers',
-
-
+    'headers'
 ];
 function Request(url, request) {
     if (url === undefined) {
@@ -29,15 +27,11 @@ function Request(url, request) {
     }
     if (typeof url === 'object') {
         request = url;
-        url = ''; 
+        url = request.url;
     }
-    if(!request){
-        request = {
-            href:url
-        };
-    }
-        
-    var uri = URL.parse(request.href);
+    request = request || { url: url };
+
+    var uri = URL.parse(url);
     //Contains the mode of the request (e.g., cors, no-cors, same-origin, navigate.)
     this.mode = request.mode || 'cors';
     //Contains the request's method (GET, POST, etc.)
@@ -46,11 +40,10 @@ function Request(url, request) {
     this.host = uri.host;
     this.hostname = uri.hostname;
     this.protocol = uri.protocol;
-    this.port = uri.port||80;
+    this.port = uri.port;
     this.path = uri.path;
     this.family = request.family;
     this.agent = request.agent;
-    this.href = request.href;
     this.createConnection = request.createConnection;
 
     this.timeout = request.timeout;
@@ -58,10 +51,10 @@ function Request(url, request) {
     this.localAddress = request.localAddress;
     this.socketPath = request.socketPath;
     this.headers = new Headers(request.headers).serialize();
-    if(typeof request.body === 'object'){
+    if (typeof request.body === 'object') {
         this.body = JSON.stringify(request.body);
-    }else{
-        this.body = request.body;        
+    } else {
+        this.body = request.body;
     }
     if (!this.headers['Content-Type']) {
         this.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=uft-8';
