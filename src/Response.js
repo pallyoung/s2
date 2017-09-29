@@ -41,8 +41,8 @@ Response.prototype = {
         this._serverResponse.write(chunk, charset, callback);
     },
     end: function (data, charset, callback) {
-        this.request.destroy();
         this._serverResponse.end(data, charset, callback);
+        this.request.destroy();
     },
     json: function (source) {
         var text = JSON.stringify(source);
@@ -74,7 +74,7 @@ Response.prototype = {
     text: function (text) {
         this.headers.append('Content-Type', 'text/plain;charset=utf-8');
         this.headers.append('Content-Length', '' + text.length);
-        this._serverResponse.writeHead('200', this.headers.serialize());
+        this.writeHead('200');
         this.end(text);
     },
     addCookie: function (cookie) {

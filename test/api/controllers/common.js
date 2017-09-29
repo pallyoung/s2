@@ -1,4 +1,5 @@
 var controller = require('./../../index').controller;
+var fetch = require('./../../index').fetch;
 function sayhello(request, response) {
 	response.writeHead(200, {
 		'Content-Type': 'text/plain;charset=UTF-8',
@@ -19,6 +20,11 @@ function upload(request, response){
 	var file = request.getParameter('file');
 	response.file(file);
 }
+function proxy(request, response){
+	fetch(request.getParameter('url')).then(function(s){
+		console.log(s)
+	})
+}
 controller(
 	'/sayhello',
 	sayhello
@@ -28,5 +34,8 @@ controller(
 )(
 	'/upload',
 	upload
+)(
+	'/proxy'
+	,proxy
 );
 

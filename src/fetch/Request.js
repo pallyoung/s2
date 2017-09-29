@@ -29,10 +29,15 @@ function Request(url, request) {
     }
     if (typeof url === 'object') {
         request = url;
-        url = '';
+        url = ''; 
     }
-    var uri = URL.parse(url);
-    request = request || {};
+    if(!request){
+        request = {
+            href:url
+        };
+    }
+        
+    var uri = URL.parse(request.href);
     //Contains the mode of the request (e.g., cors, no-cors, same-origin, navigate.)
     this.mode = request.mode || 'cors';
     //Contains the request's method (GET, POST, etc.)
@@ -45,6 +50,7 @@ function Request(url, request) {
     this.path = uri.path;
     this.family = request.family;
     this.agent = request.agent;
+    this.href = request.href;
     this.createConnection = request.createConnection;
 
     this.timeout = request.timeout;

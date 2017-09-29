@@ -51,33 +51,33 @@ function Server() {
     });
     this.errorPipe = Pipe(function (source, next, abort) {
         var response = source.response;
-        response.writeHead('404', {
+        response.writeHead(source.errorMessage, {
             "content-type": "text/plain;charset=utf-8"
         })
-        response.write('404');
-        response.end();
+        response.end(source.errorMessage);
         abort();
 
     });
     httpServer.on('request', function (comingMessage, serverResponse) {
         var request = new Request(comingMessage);
-        var response = new Response(serverResponse, request);
+        var response = new Response(serverResponse, request);        
         if (request.method == 'get') {
             self.routePipe.source({
                 request,
                 response
             });
             return;
-        }
-        bodyParser(request.headers['content-type'], comingMessage).then(function (content) {
-            request.body = content;
-            self.routePipe.source({
-                request,
-                response
+        } else {
+            bodyParser(request.headers['content-type'], comingMessage).then(function (content) {
+                request.body = content;
+                self.routePipe.source({
+                    request,
+                    response
+                });
+            }, function () {
+                this.errorPipe.source('503');
             });
-        }, function () {
-            this.errorPipe.source('503');
-        });
+        }
 
     });
     httpServer.on('clientError', function () {
