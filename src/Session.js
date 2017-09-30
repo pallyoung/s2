@@ -1,22 +1,35 @@
 'use strict'
-
+var Cookie = require('./Cookie');
 const SessionPool = new Map();
 
-const expires = 20 * 60 * 1000;
+const expires =  1000;
 
-function id() { 
-    
+function id() {
+    return 'x000000000000000000000000y'.replace(/[0xy]/g, function (c) {
+        var r = Math.random() * 16 | 0;
+        var v = c == '0' ? r : (r & 4 | 0xa);
+        return v.toString(16);
+    });
 }
 
 function Session(sessionId) {
     SessionPool.set(sessionId, this);
     this.sessionId = sessionId;
     this._map = new Map();
-    this.expires = expires + Date.now();
+    this.maxAge = expires;
+    this._destory = setTimeout(() => {
+        this.destory();
+    }, expires);
 }
 
 Session.prototype = {
     constructor: Session,
+    resetExpires: function () {
+        clearTimeout(this._destory);
+        this._destory = setTimeout(() => {
+            this.destory();
+        }, expires);
+    },
     get: function (key) {
         return this._map.get(key);
     },
@@ -51,6 +64,6 @@ function getSession(sessionId) {
     return session;
 }
 
-getSession.getSession = getSession;
+Session.getSession = getSession;
 
 module.exports = Session;

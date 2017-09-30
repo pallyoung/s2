@@ -52,6 +52,9 @@ Cookie.prototype = {
     getValue: function () {
         return this._value;
     },
+    setValue:function(value){
+        this._value = value;
+    },
     setMaxAge: function (maxAge) {
         maxAge = Number(maxAge);
         if (isNaN(maxAge)) {

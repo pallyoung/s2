@@ -9,8 +9,14 @@ function sayhello(request, response) {
 	response.end();
 }
 function saysorry(request, response){	
+
+	var session = request.getSession();
+	if(!session.get('uid')){
+		session.set('uid',Date.now())		
+	}
+
 	request.body().then(function(body){
-		response.write("sorry,"+body["name"]+"!");
+		response.write("sorry,"+session.get('uid')+"!");
 		response.end();
 		
 		

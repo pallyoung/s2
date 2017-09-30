@@ -6,6 +6,7 @@ var Headers = require('./Headers');
 var Buffer = require('buffer').Buffer;
 var File = require('./File');
 var {EventEmitter} = require('events');
+
 function Response(serverResponse, request) {
     EventEmitter.call(this);
     this._serverResponse = serverResponse;
@@ -33,6 +34,13 @@ var prototype = {
         }
         this.headers.append('Date', new Date().toGMTString());
         this.headers.append('X-Powered-By', 'node-server-s2');
+        if(this.request.sessionCookie){
+            var scookie = this.request.sessionCookie;            
+            var session = this.request.getSession();
+            session.resetExpires();
+            scookie.setMaxAge(session.maxAge);
+            this.addCookie(scookie);            
+        }
         this._serverResponse.writeHead(statusCode, statusMessage, this.headers.serialize());
     },
     setHeader: function (name, value) {

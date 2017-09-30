@@ -1,7 +1,7 @@
 'use strict'
 var http = require('http');
 var https = require('https');
-var Request = require('./Request');
+// var Request = require('./Request');
 var URL = require('url');
 function fetch(url, request) {
     request = new Request(url, request);

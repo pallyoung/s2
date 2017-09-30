@@ -43,7 +43,8 @@ function Server() {
             controller(source.request, source.response);
         } catch (e) {
             source.errorMessage = '503';
-            this.errorPipe.source(source);
+            console.log(e)
+            self.errorPipe.source(source);
         }
         abort();
 

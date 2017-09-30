@@ -6,7 +6,9 @@ var url = require("url");
 var stream,{Readable} = require('stream');
 var http = require('http');
 var IncomingMessage = http.IncomingMessage;
+var Session = require('./Session');
 
+const SESSION_ID = 'S2SESID';
 /**
  * @description
  * 封装Request对象
@@ -33,12 +35,13 @@ function Request(commingMessage) {
     var cookieJar = {}
     if(cookies){
         cookies.split(';').forEach(function(c){
-            var cookie = new Cookie(c);
+            var cookie = new Cookie(c.trim());
             cookieJar[cookie.getName()] = cookie;
         });
     }
-    this.cookies = cookieJar;
-    this._body = null;   
+    this.cookieJar = cookieJar;
+    this._body = null;  
+    this.sessionCookie = this.cookieJar[SESSION_ID];
 };
 
 Request.prototype = http.IncomingMessage.prototype;
@@ -72,14 +75,19 @@ Request.prototype.body = function(){
 }
 
 Request.prototype.getCookie = function(name){
-
-}
-Request.prototype.getCookies = function(){
-    return Object.values()    
+    return this.cookieJar[name];
 }
 
 Request.prototype.getSession=function(){
-    
+    var cookie = this.sessionCookie;
+    if(cookie){
+        return Session.getSession(cookie.getValue())        
+    }else{
+        let session = Session.getSession();
+        cookie = new Cookie(SESSION_ID,session.getId(),session.maxAge);
+        this.sessionCookie = cookie;
+        return session;
+    }
 }
 
 module.exports = Request;
