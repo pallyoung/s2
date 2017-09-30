@@ -8,12 +8,16 @@ function sayhello(request, response) {
 	response.write("hello," + request.queryString("name") + "!");
 	response.end();
 }
-function saysorry(request, response){
+function saysorry(request, response){	
+	request.body().then(function(body){
+		response.write("sorry,"+body["name"]+"!");
+		response.end();
+		
+		
+	});
 	response.writeHead(200, {
 		'Content-Type': 'text/plain;charset=UTF-8',
 	});
-	response.write("sorry,"+request.getParameter("name")+"!");
-	response.end();
 }
 
 function upload(request, response){

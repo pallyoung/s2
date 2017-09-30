@@ -8,7 +8,6 @@ var route = require('./Router').route;
 var Pipe = require('pipexjs');
 var url = require('url');
 var Cookie = require('./Cookie');
-var bodyParser = require('./BodyParser');
 var File = require('./File');
 function Server() {
     var httpServer = http.createServer();
@@ -61,23 +60,10 @@ function Server() {
     httpServer.on('request', function (comingMessage, serverResponse) {
         var request = new Request(comingMessage);
         var response = new Response(serverResponse, request);        
-        if (request.method == 'get') {
-            self.routePipe.source({
-                request,
-                response
-            });
-            return;
-        } else {
-            bodyParser(request.headers['content-type'], comingMessage).then(function (content) {
-                request.body = content;
-                self.routePipe.source({
-                    request,
-                    response
-                });
-            }, function () {
-                this.errorPipe.source('503');
-            });
-        }
+        self.routePipe.source({
+            request,
+            response
+        });
 
     });
     httpServer.on('clientError', function () {

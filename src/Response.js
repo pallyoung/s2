@@ -5,14 +5,18 @@ var Configuration = require('./Configuration');
 var Headers = require('./Headers');
 var Buffer = require('buffer').Buffer;
 var File = require('./File');
+var {EventEmitter} = require('events');
 function Response(serverResponse, request) {
+    EventEmitter.call(this);
     this._serverResponse = serverResponse;
     this.headers = new Headers();
     this.request = request;
     this._headerWrited = false;
     this._canWrite = true;
 }
-Response.prototype = {
+Response.prototype = new EventEmitter();
+
+var prototype = {
     constructor: Response,
     writeContinue: function () {
         this._serverResponse.writeContinue();
@@ -66,10 +70,7 @@ Response.prototype = {
         var stream = fs.createReadStream(file.path, {
             encoding: charset
         });
-        stream.pipe(this._serverResponse,{ end: false });
-        stream.on('end', (e) => {
-            this.end();
-        });
+        stream.pipe(this);
     },
     text: function (text) {
         this.headers.append('Content-Type', 'text/plain;charset=utf-8');
@@ -84,4 +85,7 @@ Response.prototype = {
 
     }
 }
+
+Object.assign(Response.prototype,prototype);
+
 module.exports = Response;
