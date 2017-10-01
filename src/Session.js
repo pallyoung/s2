@@ -2,7 +2,7 @@
 var Cookie = require('./Cookie');
 const SessionPool = new Map();
 
-const expires =  1000;
+const expires =  1200;
 
 function id() {
     return 'x000000000000000000000000y'.replace(/[0xy]/g, function (c) {
@@ -28,7 +28,7 @@ Session.prototype = {
         clearTimeout(this._destory);
         this._destory = setTimeout(() => {
             this.destory();
-        }, expires);
+        }, expires*1000);
     },
     get: function (key) {
         return this._map.get(key);
@@ -43,9 +43,9 @@ Session.prototype = {
         return this._map.delete(key);
     },
     destory: function () {
+        SessionPool.delete(this.sessionId);        
         this._map = null;
         this.expires = 0;
-        SessionPool.delete(this.id)
     },
     isLive: function () {
         return this.expires - Date.now() > 0;
