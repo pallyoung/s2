@@ -3,7 +3,6 @@
 var Pipe = require('pipexjs');
 var fs = require('fs');
 function asset(source,next,abort){
-    console.log('ssss')
     var response = source.response;
     var assert = source.assert;
     var request = source.request;

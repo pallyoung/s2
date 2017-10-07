@@ -31,6 +31,7 @@ function Request(commingMessage) {
     this.parameters = {};
     this.length = 0;
     this.type = 0;
+    this.bodyParser;
     var cookies = this.headers.cookie;
     var cookieJar = {}
     if(cookies){
@@ -60,10 +61,8 @@ Request.prototype.queryString = function (key) {
  * 获取post方式提交的数据
  **/
 Request.prototype.body = function(){
-    if(this._body){
-        return Promise.resolve(this._body);
-    }else{
-        return bodyParser(this.headers['content-type'], this).then((body)=>{
+    if(!this._bodyParser){
+        this._bodyParser =  bodyParser(this.headers['content-type'], this).then((body)=>{
             this._body = body;
             return body;
         },function(err){
@@ -72,6 +71,7 @@ Request.prototype.body = function(){
             return err;
         });
     }
+    return this._bodyParser;
 }
 
 Request.prototype.getCookie = function(name){
