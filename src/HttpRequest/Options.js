@@ -2,7 +2,6 @@
 /**
  * fetch辅助类
  */
-var Headers = require('./Headers');
 var URL = require('url');
 
 var REQUEST_KEYS = [
@@ -50,7 +49,7 @@ function Request(url, request) {
     this.auth = request.auth;
     this.localAddress = request.localAddress;
     this.socketPath = request.socketPath;
-    this.headers = new Headers(request.headers).serialize();
+    this.headers = request.headers;
     if (typeof request.body === 'object') {
         this.body = JSON.stringify(request.body);
     } else {

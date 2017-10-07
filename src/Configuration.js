@@ -24,7 +24,7 @@ Configuration.prototype = {
         this.proxy = config.proxy;
         this.temporary = config.temporary || process.cwd() + '/temporary';
     },
-    load() {
+    load() {        
         if (fs.existsSync(CONFIG_FILE)) {
             this.init(require(CONFIG_FILE));
         }

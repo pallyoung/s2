@@ -22,6 +22,8 @@ function Server() {
     this.assertPipe = assertPipe();
     this.controllerPipe = controllerPipe();
     this.errorPipe = errorPipe();
+    this.proxyPipe = proxyPipe();
+    this.proxyPipe.after(this.routePipe);
     this.routePipe.after(this.assertPipe);
     this.assertPipe.after(this.controllerPipe);
     this.controllerPipe.after(Pipe(function(source,next,abort){
@@ -34,7 +36,7 @@ function Server() {
 
     httpServer.on('request', function (comingMessage, serverResponse) {
         var request = new Request(comingMessage);
-        var response = new Response(serverResponse, request);        
+        var response = new Response(serverResponse, request);    
         self.routePipe.source({
             request,
             response,
