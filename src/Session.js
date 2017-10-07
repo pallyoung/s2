@@ -50,7 +50,7 @@ Session.prototype = {
     isLive: function () {
         return this.expires - Date.now() > 0;
     },
-    getId: function (params) {
+    getId: function () {
         return this.sessionId;
     }
 }

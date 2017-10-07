@@ -18,7 +18,7 @@ function getParserByContentType(contentType) {
     }
 }
 
-module.exports = function parser(contentType, stream) {
+module.exports = function(contentType, stream) {
     contentType = contentType || 'text/plain';
     var parser = getParserByContentType(contentType) || plain;
     return parser(contentType, stream);
