@@ -10,7 +10,7 @@ function route(source,next,abort){
     var pathname = url.parse(source.request.url).pathname;
     var controller = Router.route(pathname);
     if (!controller) {
-        pathname = Configuration.assert + pathname;
+        pathname = pathname == '/'?Configuration.assert+'/index.html':Configuration.assert + pathname;
         source.assert = pathname;
     } else {
         source.controller = controller;
