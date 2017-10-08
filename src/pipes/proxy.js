@@ -13,7 +13,7 @@ function proxy(source, next, abort) {
     if(config){
         uri.host = config.target;   
         uri.path = uri.path.replace('/'+paths[1],'');     
-        request.url = uri.host+'/'+uri.path;
+        request.url = uri.host+uri.path;
         HttpRequest.request(request,source.response);
         abort();
     }else{

@@ -35,8 +35,8 @@ function Server() {
     }));
 
     httpServer.on('request', function (comingMessage, serverResponse) {
-        var request = new Request(comingMessage);
-        var response = new Response(serverResponse, request);    
+        var request = Request(comingMessage);
+        var response = Response(serverResponse, request);    
         self.routePipe.source({
             request,
             response,

@@ -5,55 +5,46 @@ var Configuration = require('./Configuration');
 var Headers = require('./Headers');
 var Buffer = require('buffer').Buffer;
 var File = require('./File');
-var {EventEmitter} = require('events');
+var { EventEmitter } = require('events');
+var http = require('http');
 
 function Response(serverResponse, request) {
-    EventEmitter.call(this);
-    this._serverResponse = serverResponse;
-    this.headers = new Headers();
-    this.request = request;
-    this._headerWrited = false;
-    this._canWrite = true;
+    serverResponse.request = request;
+    serverResponse.headers = new Headers();
+    return serverResponse;
 }
-Response.prototype = new EventEmitter();
+
+var _proto_ = http.ServerResponse.prototype;
+
+var writeHead = _proto_.writeHead;
+var end = _proto_.end;
 
 var prototype = {
-    constructor: Response,
-    writeContinue: function () {
-        this._serverResponse.writeContinue();
-    },
+
     writeHead: function (statusCode, statusMessage, headers) {
-        if(typeof statusMessage!=='string'){
+        if (typeof statusMessage !== 'string') {
             headers = statusMessage;
             statusMessage = '';
         }
-        headers = headers ||{};
+        headers = headers || {};
         this._headerWrited = true;
         for (var o in headers) {
             this.headers.append(o, headers[o]);
         }
-        this.headers.append('Date', new Date().toGMTString());
         this.headers.append('X-Powered-By', 'node-server-s2');
-        if(this.request.sessionCookie){
-            var scookie = this.request.sessionCookie;            
+        if (this.request.sessionCookie) {
+            var scookie = this.request.sessionCookie;
             var session = this.request.getSession();
             session.resetExpires();
             scookie.setMaxAge(session.maxAge);
-            this.addCookie(scookie);            
+            this.addCookie(scookie);
         }
-        this._serverResponse.writeHead(statusCode, statusMessage, this.headers.serialize());
+       writeHead.call(this,statusCode, statusMessage, this.headers.serialize());
     },
-    setHeader: function (name, value) {
-        this._serverResponse.setHeader(name, value);
-    },
-    write: function (chunk, charset, callback) {
-        if(!this._headerWrited){
-            this.writeHead('200');
-        }
-        this._serverResponse.write(chunk, charset, callback);
-    },
+
+
     end: function (data, charset, callback) {
-        this._serverResponse.end(data, charset, callback);
+        end.call(this,data,charset,callback);
         this.request.destroy();
     },
     json: function (source) {
@@ -94,6 +85,6 @@ var prototype = {
     }
 }
 
-Object.assign(Response.prototype,prototype);
+Object.assign(_proto_, prototype);
 
 module.exports = Response;

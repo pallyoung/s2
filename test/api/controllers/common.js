@@ -18,8 +18,8 @@ function saysorry(request, response){
 	request.body().then(function(body){
 		response.write("sorry,"+session.get('uid')+"!");
 		response.end();
-		
-		
+	}).catch(function(e){
+		console.log(111,e)
 	});
 	
 }
