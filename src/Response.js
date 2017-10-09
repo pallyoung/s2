@@ -7,6 +7,9 @@ var Buffer = require('buffer').Buffer;
 var File = require('./File');
 var { EventEmitter } = require('events');
 var http = require('http');
+var zlib = require('zlib');
+
+const gzip = zlib.createGzip();
 
 function Response(serverResponse, request) {
     serverResponse.request = request;
@@ -18,7 +21,7 @@ var _proto_ = http.ServerResponse.prototype;
 
 var writeHead = _proto_.writeHead;
 var end = _proto_.end;
-
+var write = _proto_.write;
 var prototype = {
 
     writeHead: function (statusCode, statusMessage, headers) {
@@ -32,6 +35,9 @@ var prototype = {
             this.headers.append(o, headers[o]);
         }
         this.headers.append('X-Powered-By', 'node-server-s2');
+        if (Configuration.gzip) {
+            this.headers.append('content-encoding', 'gzip');
+        }
         if (this.request.sessionCookie) {
             var scookie = this.request.sessionCookie;
             var session = this.request.getSession();
@@ -39,19 +45,24 @@ var prototype = {
             scookie.setMaxAge(session.maxAge);
             this.addCookie(scookie);
         }
-       writeHead.call(this,statusCode, statusMessage, this.headers.serialize());
+        writeHead.call(this, statusCode, statusMessage, this.headers.serialize());
     },
-
-
+    write: function (chunk, encoding, cb) {
+        if (Configuration.gzip) {
+            write.call(this,zlib.gzipSync(chunk),encoding, cb);
+        } else {
+            write.call(this, chunk, encoding, cb);
+        }
+    },
     end: function (data, charset, callback) {
-        end.call(this,data,charset,callback);
-        this.request.destroy();
+        end.call(this, data, charset, callback);
+        // this.request.destroy();
     },
     json: function (source) {
         var text = JSON.stringify(source);
         this.headers.append('Content-Type', 'application/json;charset=utf-8');
         this.headers.append('Content-Length', '' + text.length);
-        this._serverResponse.writeHead('200', this.headers.serialize());
+        this.writeHead('200');
         this.end(text);
     },
     file: function (file, charset) {
