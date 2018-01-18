@@ -1,6 +1,4 @@
 'use strict'
-
-var Pipe = require('pipexjs');
 var fs = require('fs');
 function asset(source,next,abort){
     var response = source.response;
@@ -24,6 +22,4 @@ function asset(source,next,abort){
     next(source);
 }
 
-module.exports = function(){
-    return new Pipe(asset);
-}
+module.exports = asset;

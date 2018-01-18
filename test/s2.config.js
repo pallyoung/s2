@@ -1,8 +1,10 @@
 'use strict'
 module.exports = {
+    assertDir:'./assert',
+    controllerDir:'./api/controllers',
     proxy:{
         "/api": {
-            target:'http://uatfapi.nxshidai.com',
+            target:'http://www.ichuangshun.com',
             pathRewrite: {'^/api' : ''}
         }
     }

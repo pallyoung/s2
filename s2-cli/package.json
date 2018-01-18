@@ -1,0 +1,39 @@
+{
+    "name": "s2-server-cli",
+    "version": "1.0.0",
+    "description": "s2 server cli",
+    "keywords": [
+        "s2",
+        "server",
+        "nodejs",
+        "node",
+        "cli",
+        "starter"
+    ],
+    "bin": {
+        "s2": "index.js"
+    },
+    "maintainers": [
+        {
+            "name": "Spencer Ye",
+            "email": "pallyoung@163.com"
+        }
+    ],
+    "contributors": [
+        {
+            "name": "Spencer Ye",
+            "email": "pallyoung@163.com"
+        }
+    ],
+    "author": "Spencer Ye",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pallyoung/s2.git"
+    },
+    "licensce": [
+        "MIT"
+    ],
+    "bugs": {
+        "email": "pallyoung@163.com"
+    }
+}

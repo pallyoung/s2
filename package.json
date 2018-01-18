@@ -25,12 +25,15 @@
   ],
   "dependencies": {
     "js-console": "0.0.1",
-    "pipexjs": "^1.0.0"
+    "pipexjs": "^1.1.2"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/pallyoung/s2.git"
   },
+  "licensce":[
+    "MIT"
+  ],
   "bugs": {
     "email": "pallyoung@163.com"
   }

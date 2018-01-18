@@ -1,5 +1,4 @@
 'use strict'
-var Pipe = require('pipexjs');
 var Request = require('./../Request');
 var Response = require('./../Response');
 var url = require('url');
@@ -19,6 +18,4 @@ function route(source,next,abort){
 }
 
 
-var exports = module.exports = function(){
-    return new Pipe(route);
-}
+var exports = module.exports = route;

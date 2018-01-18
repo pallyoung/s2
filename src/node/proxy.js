@@ -1,5 +1,4 @@
 'use strict'
-var Pipe = require('pipexjs');
 var HttpRequest = require('./../HttpRequest');
 var url = require('url')
 
@@ -20,6 +19,4 @@ function proxy(source, next, abort) {
         next();
     }
 }
-module.exports = function () {
-    return new Pipe(proxy);
-}
+module.exports = proxy;

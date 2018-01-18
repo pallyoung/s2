@@ -1,5 +1,4 @@
 'use strict'
-var Pipe = require('pipexjs');
 function error(source,next,abort){
     var response = source.response;
     response.writeHead(source.code, {
@@ -9,6 +8,4 @@ function error(source,next,abort){
     abort();
 }
 
-module.exports = function(){
-    return new Pipe(error);
-}
+module.exports = error;

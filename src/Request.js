@@ -49,7 +49,7 @@ var prototype = {
      **/
     body: function () {
         if (!this._bodyParser) {
-            this._bodyParser = bodyParser(this.headers['content-type'], this).then((body) => {
+            this._bodyParser = bodyParser.parse(this.headers['content-type'], this).then((body) => {
                 this._body = body;
                 return body;
             }, function (err) {

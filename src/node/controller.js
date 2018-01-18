@@ -1,5 +1,4 @@
 'use strict'
-var Pipe = require('pipexjs');
 function controller(source,next,abort){
     var controller = source.controller;
     var code = 200;
@@ -22,6 +21,4 @@ function controller(source,next,abort){
     next(source);
 }
 
-module.exports = function(){
-    return new Pipe(controller);
-}
+module.exports = controller
