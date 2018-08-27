@@ -24,14 +24,13 @@
     }
   ],
   "dependencies": {
-    "js-console": "0.0.1",
-    "pipexjs": "^1.1.2"
+    "js-console": "0.0.1"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/pallyoung/s2.git"
   },
-  "licensce":[
+  "licensce": [
     "MIT"
   ],
   "bugs": {
