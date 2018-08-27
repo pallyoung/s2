@@ -30,9 +30,7 @@
     "type": "git",
     "url": "https://github.com/pallyoung/s2.git"
   },
-  "licensce": [
-    "MIT"
-  ],
+  "license": "Apache-2.0",
   "bugs": {
     "email": "pallyoung@163.com"
   }
